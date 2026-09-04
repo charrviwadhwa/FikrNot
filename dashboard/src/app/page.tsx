@@ -293,7 +293,7 @@ export default function SimpleCleanDashboard() {
               <h3 className="text-base font-black text-slate-900 mt-0.5">What Happens When a Customer Drops & Presses '1'</h3>
             </div>
             <a 
-              href={`${BACKEND_URL}/checkout/order_high_val_991`}
+              href="/checkout/order_high_val_991"
               target="_blank"
               rel="noreferrer"
               className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl shadow transition flex items-center gap-1"
@@ -425,7 +425,7 @@ export default function SimpleCleanDashboard() {
                     )}
 
                     <a
-                      href={`${BACKEND_URL}/checkout/${item.orderId}`}
+                      href={`/checkout/${item.orderId}`}
                       target="_blank"
                       rel="noreferrer"
                       onClick={(e) => e.stopPropagation()}
@@ -510,7 +510,7 @@ export default function SimpleCleanDashboard() {
 
             {/* 1-Click Fallback Checkout Link */}
             <a
-              href={`${BACKEND_URL}/checkout/${selectedItem.orderId}`}
+              href={`/checkout/${selectedItem.orderId}`}
               target="_blank"
               rel="noreferrer"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 text-xs shadow-md transition"
