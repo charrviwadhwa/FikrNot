@@ -1,0 +1,12 @@
+[
+  {
+    "transactionId": "pay_test_001",
+    "orderId": "order_001",
+    "amount": 149900,
+    "customer": { "name": "Rahul Sharma", "phone": "+917982957206" },
+    "errorCode": "BAD_REQUEST_PAYMENT_TIMED_OUT",
+    "errorDescription": "UPI session timed out during app switch.",
+    "isDebitedRisk": true,
+    "createdAt": "2026-09-04T10:00:00.000Z"
+  }
+]
