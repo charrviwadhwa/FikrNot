@@ -3,6 +3,7 @@ import Razorpay from "razorpay";
 import * as dotenv from "dotenv";
 import { DropEvent, FikrNotDecision } from "./types";
 import { makeReassuranceCall, sendSmsLink } from "./twilio";
+import { generateSarvamVoice } from "./sarvam";
 dotenv.config();
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -52,42 +53,61 @@ export async function processDrop(event: DropEvent): Promise<FikrNotDecision> {
   }
 
   // 3. AI Reasoning: Context Diagnosis & Scripting (Gated Prompting)
-  const response = await ai.models.generateContent({
-    model: "gemini-3.6-flash",
-    contents: `Analyze this failed UPI transaction: ${JSON.stringify(event)}. 
-    Determine panic level, decide if an automated Hinglish reassurance voice escalation is necessary, and write an empathetic Hinglish script.
-    
-    CRITICAL COMPLIANCE RULES:
-    1. You are NEVER allowed to guess if money was deducted. Rely on 'isDebitedRisk'.
-    2. Only state that if money was deducted ("Agar paise kat gaye hain"), the standard NPCI banking auto-reversal applies (T+1 days).
-    3. DO NOT promise immediate merchant dispatch or order confirmation until settlement.`,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          panicLevel: { type: Type.STRING, enum: ["LOW", "MODERATE", "CRITICAL"] },
-          action: { type: Type.STRING, enum: ["SILENT_RECOVERY", "VOICE_ESCALATION", "STOP"] },
-          reasoning: { type: Type.STRING },
-          hinglishScript: { type: Type.STRING },
-          fallbackRail: { type: Type.STRING, enum: ["NETBANKING", "CARDS", "DYNAMIC_QR"] }
-        },
-        required: ["panicLevel", "action", "reasoning", "fallbackRail"]
-      }
-    }
-  });
+  const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-3.6-flash"];
+  let responseText: string | null = null;
+  let lastError: any = null;
 
-  const decision = JSON.parse(response.text!) as Partial<FikrNotDecision>;
+  for (const modelName of modelsToTry) {
+    try {
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: `Analyze this failed UPI transaction: ${JSON.stringify(event)}. 
+        Determine panic level, decide if an automated Hinglish reassurance voice escalation is necessary, and write an empathetic Hinglish script.
+        
+        CRITICAL COMPLIANCE RULES:
+        1. You are NEVER allowed to guess if money was deducted. Rely on 'isDebitedRisk'.
+        2. Only state that if money was deducted ("Agar paise kat gaye hain"), the standard NPCI banking auto-reversal applies (T+1 days).
+        3. DO NOT promise immediate merchant dispatch or order confirmation until settlement.`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              panicLevel: { type: Type.STRING, enum: ["LOW", "MODERATE", "CRITICAL"] },
+              action: { type: Type.STRING, enum: ["SILENT_RECOVERY", "VOICE_ESCALATION", "STOP"] },
+              reasoning: { type: Type.STRING },
+              hinglishScript: { type: Type.STRING },
+              fallbackRail: { type: Type.STRING, enum: ["NETBANKING", "CARDS", "DYNAMIC_QR"] }
+            },
+            required: ["panicLevel", "action", "reasoning", "fallbackRail"]
+          }
+        }
+      });
+      if (response.text) {
+        responseText = response.text;
+        break;
+      }
+    } catch (err) {
+      lastError = err;
+      console.log(`[WARN] Model ${modelName} encountered error, trying next...`);
+    }
+  }
+
+  if (!responseText) {
+    throw lastError || new Error("Failed to generate content across all models");
+  }
+
+  const decision = JSON.parse(responseText) as Partial<FikrNotDecision>;
   
   const action = decision.action || "SILENT_RECOVERY";
   const hinglishScript = decision.hinglishScript || "";
   
-  // 4. Actuation: Twilio Dispatch
-  // Note: we use a mock payment link here for the SMS fallback.
+  // 4. Actuation: Sarvam Audio Gen & Twilio Dispatch
   const mockFallbackLink = "https://rzp.io/i/mock_fallback";
   
   if (action === "VOICE_ESCALATION" && hinglishScript) {
-    await makeReassuranceCall(event.customer.phone, hinglishScript);
+    const audioFilename = await generateSarvamVoice(hinglishScript, `${event.transactionId}_reassurance.wav`);
+    await makeReassuranceCall(event.customer.phone, audioFilename);
   } else if (action === "SILENT_RECOVERY") {
     await sendSmsLink(event.customer.phone, mockFallbackLink);
   }

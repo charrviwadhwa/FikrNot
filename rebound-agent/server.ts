@@ -6,6 +6,23 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
+
+// TwiML endpoint for Twilio Voice Calls (compatible with Trial & Upgraded accounts)
+app.all("/twiml/play", (req, res) => {
+  const file = req.query.file || req.body?.file;
+  const baseUrl = process.env.SERVER_BASE_URL || `http://localhost:${port}`;
+  const audioUrl = `${baseUrl}/${file}`;
+
+  console.log(`[TWIML] Serving audio URL: ${audioUrl}`);
+
+  res.type("text/xml");
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Play>${audioUrl}</Play>
+</Response>`);
+});
 
 // Webhook listener for UPI drop events
 app.post("/webhook/drop", async (req, res) => {

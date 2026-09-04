@@ -8,12 +8,17 @@ const fromNumber = process.env.TWILIO_PHONE_NUMBER!;
 
 const client = twilio(accountSid, authToken);
 
-export async function makeReassuranceCall(toPhoneNumber: string, hinglishMessage: string) {
+export async function makeReassuranceCall(toPhoneNumber: string, audioFilename: string) {
   try {
     console.log(`[TWILIO] Initiating call to ${toPhoneNumber}...`);
-    // Trial accounts block inline 'twiml'. We use a public TwiML URL to force the call through.
+    
+    // Fallback base URL if not set
+    const baseUrl = process.env.SERVER_BASE_URL || "http://localhost:3000";
+    const twimlUrl = `${baseUrl}/twiml/play?file=${encodeURIComponent(audioFilename)}`;
+    
+    // Twilio trial accounts require the 'url' parameter instead of inline 'twiml'
     const call = await client.calls.create({
-      url: "http://demo.twilio.com/docs/voice.xml",
+      url: twimlUrl,
       to: toPhoneNumber,
       from: fromNumber
     });
