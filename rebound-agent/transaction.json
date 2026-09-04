@@ -1,12 +1,42 @@
 [
   {
-    "transactionId": "pay_test_001",
-    "orderId": "order_001",
-    "amount": 149900,
+    "transactionId": "pay_upi_timeout_001",
+    "orderId": "order_high_val_991",
+    "amount": 1499900,
     "customer": { "name": "Rahul Sharma", "phone": "+917982957206" },
     "errorCode": "BAD_REQUEST_PAYMENT_TIMED_OUT",
-    "errorDescription": "UPI session timed out during app switch.",
+    "errorDescription": "UPI session timed out during app switch. NPCI bank debit flag active.",
     "isDebitedRisk": true,
     "createdAt": "2026-09-04T10:00:00.000Z"
+  },
+  {
+    "transactionId": "pay_low_val_002",
+    "orderId": "order_quick_321",
+    "amount": 29900,
+    "customer": { "name": "Priya Verma", "phone": "+917982957206" },
+    "errorCode": "PAYMENT_CANCELLED_BY_USER",
+    "errorDescription": "Network glitch at gateway handshake. No money deducted.",
+    "isDebitedRisk": false,
+    "createdAt": "2026-09-04T10:05:00.000Z"
+  },
+  {
+    "transactionId": "pay_user_cancelled_003",
+    "orderId": "order_abandon_442",
+    "amount": 450000,
+    "customer": { "name": "Amit Patel", "phone": "+917982957206" },
+    "errorCode": "CUSTOMER_CANCELLED",
+    "errorDescription": "Customer clicked Cancel button on payment page.",
+    "isDebitedRisk": false,
+    "createdAt": "2026-09-04T10:10:00.000Z"
+  },
+  {
+    "transactionId": "pay_captured_already_004",
+    "orderId": "order_settled_778",
+    "amount": 89900,
+    "customer": { "name": "Sneha Gupta", "phone": "+917982957206" },
+    "errorCode": "GATEWAY_ERROR",
+    "errorDescription": "Temporary timeout but bank confirmed payment captured.",
+    "isDebitedRisk": true,
+    "createdAt": "2026-09-04T10:15:00.000Z"
   }
 ]

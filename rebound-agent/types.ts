@@ -20,6 +20,10 @@ export interface FikrNotDecision {
   reasoning: string;
   hinglishScript?: string;
   fallbackRail: "NETBANKING" | "CARDS" | "DYNAMIC_QR";
+  audioFilename?: string;
+  fallbackLink?: string;
+  callSid?: string;
+  smsSid?: string;
   audit: {
     stoppingRuleApplied?: string;
     preVerificationPassed: boolean;

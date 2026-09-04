@@ -53,7 +53,13 @@ export async function processDrop(event: DropEvent): Promise<FikrNotDecision> {
   }
 
   // 3. AI Reasoning: Context Diagnosis & Scripting (Gated Prompting)
-  const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-3.6-flash"];
+  const modelsToTry = [
+    "gemini-3.7-flash",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash-lite",
+    "gemini-flash-latest",
+    "gemini-3.6-flash"
+  ];
   let responseText: string | null = null;
   let lastError: any = null;
 
@@ -64,10 +70,12 @@ export async function processDrop(event: DropEvent): Promise<FikrNotDecision> {
         contents: `Analyze this failed UPI transaction: ${JSON.stringify(event)}. 
         Determine panic level, decide if an automated Hinglish reassurance voice escalation is necessary, and write an empathetic Hinglish script.
         
-        CRITICAL COMPLIANCE RULES:
-        1. You are NEVER allowed to guess if money was deducted. Rely on 'isDebitedRisk'.
-        2. Only state that if money was deducted ("Agar paise kat gaye hain"), the standard NPCI banking auto-reversal applies (T+1 days).
-        3. DO NOT promise immediate merchant dispatch or order confirmation until settlement.`,
+        CRITICAL SCRIPT & COMPLIANCE RULES:
+        1. GREETING: Start politely with "Namaste ${event.customer.name} ji".
+        2. COMPLIANCE: You are NEVER allowed to guess if money was deducted. Rely on 'isDebitedRisk'. Only state that if money was deducted ("Agar paise kat gaye hain"), standard bank auto-reversal applies.
+        3. CART RESERVATION & PRESS 1: Mention that their cart is reserved for 15 minutes, and say: "Agar aap abhi pay karna chahte hain toh dialpad par 1 dabayein."
+        4. CLOSING: Always end politely with "Fikr mat kijiye, hum aapke saath hain. Dhanyawaad, have a great day!".
+        5. LENGTH: Keep it concise, warm, and natural (under 40 words).`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -87,29 +95,49 @@ export async function processDrop(event: DropEvent): Promise<FikrNotDecision> {
         responseText = response.text;
         break;
       }
-    } catch (err) {
+    } catch (err: any) {
       lastError = err;
-      console.log(`[WARN] Model ${modelName} encountered error, trying next...`);
+      console.log(`[WARN] Model ${modelName} encountered error (${err?.status || err?.message}), trying next...`);
     }
   }
 
-  if (!responseText) {
-    throw lastError || new Error("Failed to generate content across all models");
-  }
+  let decision: Partial<FikrNotDecision>;
 
-  const decision = JSON.parse(responseText) as Partial<FikrNotDecision>;
+  if (responseText) {
+    decision = JSON.parse(responseText) as Partial<FikrNotDecision>;
+  } else {
+    // Graceful Deterministic Fallback if Google API hits quota/503 spike during live demo
+    console.log(`[FALLBACK] Applying deterministic policy due to LLM quota/demand.`);
+    const isHighPanic = event.isDebitedRisk || event.amount >= 500000;
+    decision = {
+      panicLevel: isHighPanic ? "CRITICAL" : "LOW",
+      action: isHighPanic ? "VOICE_ESCALATION" : "SILENT_RECOVERY",
+      reasoning: isHighPanic 
+        ? "Deterministic Policy: High transaction value and debit risk detected. Escalated to Hinglish voice reassurance."
+        : "Deterministic Policy: Low friction drop-off. Dispatched silent SMS fallback checkout link.",
+      hinglishScript: `Namaste ${event.customer.name} ji, humne dekha aapka payment network issue ki wajah se atak gaya. Fikr mat kijiye, agar paise kate hain toh bank auto-reverse ho jayenge. Humne aapka cart 15 minute ke liye reserve kar diya hai. Agar aap abhi pay karna chahte hain toh dialpad par 1 dabayein. Dhanyawaad!`,
+      fallbackRail: isHighPanic ? "DYNAMIC_QR" : "CARDS"
+    };
+  }
   
   const action = decision.action || "SILENT_RECOVERY";
   const hinglishScript = decision.hinglishScript || "";
   
   // 4. Actuation: Sarvam Audio Gen & Twilio Dispatch
-  const mockFallbackLink = "https://rzp.io/i/mock_fallback";
+  const baseUrl = process.env.SERVER_BASE_URL || "http://localhost:3000";
+  const fallbackLink = `${baseUrl}/checkout/${event.orderId}`;
   
+  let audioFilename: string | undefined;
+  let callSid: string | undefined;
+  let smsSid: string | undefined;
+
   if (action === "VOICE_ESCALATION" && hinglishScript) {
-    const audioFilename = await generateSarvamVoice(hinglishScript, `${event.transactionId}_reassurance.wav`);
-    await makeReassuranceCall(event.customer.phone, audioFilename);
+    audioFilename = await generateSarvamVoice(hinglishScript, `${event.transactionId}_reassurance.wav`);
+    callSid = await makeReassuranceCall(event.customer.phone, audioFilename);
+    // Also dispatch the SMS fallback link so the customer has a direct link to retry
+    smsSid = await sendSmsLink(event.customer.phone, fallbackLink);
   } else if (action === "SILENT_RECOVERY") {
-    await sendSmsLink(event.customer.phone, mockFallbackLink);
+    smsSid = await sendSmsLink(event.customer.phone, fallbackLink);
   }
 
   // 5. Return decision audit
@@ -120,6 +148,10 @@ export async function processDrop(event: DropEvent): Promise<FikrNotDecision> {
     reasoning: decision.reasoning || "Fallback reasoning applied",
     hinglishScript: hinglishScript,
     fallbackRail: decision.fallbackRail || "DYNAMIC_QR",
+    audioFilename: audioFilename,
+    fallbackLink: fallbackLink,
+    callSid: callSid,
+    smsSid: smsSid,
     audit: {
       preVerificationPassed: true,
       timestamp: new Date().toISOString()

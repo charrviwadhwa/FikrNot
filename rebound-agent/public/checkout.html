@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FikrNot | Customer SMS & Fallback Recovery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0F172A;
+      --phone-bg: #FFFFFF;
+      --bubble-bg: #E2E8F0;
+      --bubble-text: #0F172A;
+      --primary-blue: #2563EB;
+      --emerald: #10B981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .top-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      color: #93C5FD;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+    }
+
+    /* SMARTPHONE CONTAINER */
+    .phone-mockup {
+      width: 390px;
+      height: 760px;
+      background: #FFFFFF;
+      border-radius: 48px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 12px #1E293B;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      border: 4px solid #0F172A;
+    }
+
+    /* DYNAMIC ISLAND */
+    .dynamic-island {
+      width: 110px;
+      height: 24px;
+      background: #000000;
+      border-radius: 20px;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+    }
+
+    /* STATUS BAR */
+    .status-bar {
+      height: 44px;
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #0F172A;
+      background: #F8FAFC;
+    }
+
+    /* MESSENGER HEADER */
+    .messenger-header {
+      background: #F8FAFC;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .back-btn {
+      font-size: 1.25rem;
+      color: #2563EB;
+      cursor: pointer;
+    }
+
+    .sender-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #2563EB;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
+
+    .sender-info h3 {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .sender-info span {
+      font-size: 0.7rem;
+      color: #64748B;
+    }
+
+    /* MESSAGES AREA */
+    .messages-area {
+      flex: 1;
+      padding: 1rem;
+      background: #F1F5F9;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .timestamp {
+      text-align: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0.5rem 0;
+    }
+
+    .sms-bubble {
+      background: #FFFFFF;
+      border-radius: 18px 18px 18px 4px;
+      padding: 0.85rem 1rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #E2E8F0;
+      max-width: 90%;
+      font-size: 0.8rem;
+      color: #1E293B;
+      line-height: 1.45;
+    }
+
+    .sms-bubble strong {
+      color: #0F172A;
+    }
+
+    /* LINK PREVIEW CARD INSIDE SMS */
+    .link-card {
+      margin-top: 0.65rem;
+      background: #F8FAFC;
+      border: 1px solid #CBD5E1;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .link-card:hover {
+      border-color: #2563EB;
+      background: #EFF6FF;
+    }
+
+    .link-card-header {
+      background: #2563EB;
+      color: white;
+      padding: 0.4rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .link-card-body {
+      padding: 0.65rem 0.75rem;
+    }
+
+    .link-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 0.15rem;
+    }
+
+    .link-desc {
+      font-size: 0.68rem;
+      color: #64748B;
+    }
+
+    .link-action {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      color: #2563EB;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-top: 0.35rem;
+    }
+
+    /* SLIDE-UP CHECKOUT MODAL */
+    .checkout-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #FFFFFF;
+      border-radius: 28px 28px 0 0;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+      border-top: 1px solid #E2E8F0;
+      padding: 1.25rem;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+      z-index: 50;
+      max-height: 85%;
+      overflow-y: auto;
+    }
+
+    .checkout-sheet.active {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: #CBD5E1;
+      border-radius: 999px;
+      margin: 0 auto 1rem auto;
+    }
+
+    .sheet-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .sheet-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .timer-badge {
+      background: #FEF3C7;
+      color: #B45309;
+      border: 1px solid #FDE68A;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+    }
+
+    /* RAILS */
+    .rail-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .rail-item.selected {
+      border-color: #2563EB;
+      background: #EFF6FF;
+    }
+
+    .rail-info {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .rail-icon {
+      font-size: 1.1rem;
+    }
+
+    .rail-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .rail-sub {
+      font-size: 0.68rem;
+      color: #64748B;
+    }
+
+    .btn-complete {
+      width: 100%;
+      background: #2563EB;
+      color: white;
+      border: none;
+      padding: 0.85rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 1rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-complete:hover {
+      background: #1D4ED8;
+    }
+
+    /* SUCCESS STATE */
+    .success-view {
+      display: none;
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+    /* PUSH NOTIFICATION DROPDOWN */
+    .push-notification {
+      position: absolute;
+      top: -100px;
+      left: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      color: white;
+      border-radius: 20px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      z-index: 200;
+      transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+
+    .push-notification.active {
+      top: 14px;
+    }
+
+    .push-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .push-text h4 {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .push-text p {
+      font-size: 0.68rem;
+      color: #94A3B8;
+      margin-top: 0.1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-badge" style="gap: 1rem;">
+    <span>📱 Customer Mobile Simulator</span>
+    <button id="pressOneBtn" onclick="triggerPressOneDemo()" style="background: #2563EB; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 999px; font-weight: 800; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+      <span>⚡ Test "Press 1 to Pay" Flow</span>
+    </button>
+  </div>
+
+  <div class="phone-mockup">
+    <!-- DYNAMIC ISLAND -->
+    <div class="dynamic-island"></div>
+
+    <!-- INCOMING UPI PUSH NOTIFICATION (DROPS WHEN KEY 1 IS PRESSED) -->
+    <div class="push-notification" id="pushBanner" onclick="openCheckout()">
+      <div class="push-icon">⚡</div>
+      <div class="push-text">
+        <h4>Google Pay • UPI Request <span style="font-size: 0.65rem; color: #10B981; font-weight: 700;">NOW</span></h4>
+        <p>Razorpay requesting <strong>₹<span id="pushAmt">14,999.00</span></strong> (Tap to approve)</p>
+      </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>5G 📶 100%</span>
+    </div>
+
+    <!-- MESSENGER HEADER -->
+    <div class="messenger-header">
+      <div class="back-btn" onclick="window.location.href='http://localhost:3001'">‹</div>
+      <div class="sender-avatar">FN</div>
+      <div class="sender-info">
+        <h3>VK-FIKRNT <span style="color: #2563EB;">✓</span></h3>
+        <span>Razorpay Recovery Agent</span>
+      </div>
+    </div>
+
+    <!-- SMS MESSAGES CONVERSATION -->
+    <div class="messages-area">
+      <div class="timestamp">Today 10:02 AM</div>
+
+      <!-- OUTGOING / INCOMING MESSAGE BUBBLE -->
+      <div class="sms-bubble">
+        <strong>FikrNot:</strong> Namaste <span id="smsName">Rahul Sharma</span> ji, humne dekha aapka UPI session time out ho gaya.
+        <br><br>
+        🛡️ Fikr mat kijiye, agar paise kate hain toh <strong>bank auto-reversal</strong> ho jayega.
+        <br><br>
+        Aapka cart <strong>15 minute ke liye reserved</strong> hai. 1-click mein complete karne ke liye tap karein:
+
+        <!-- CLICKABLE LINK CARD -->
+        <div class="link-card" onclick="openCheckout()">
+          <div class="link-card-header">
+            <span>🛒 CART RESERVED (15m)</span>
+            <span>₹<span id="smsAmount">14,999.00</span></span>
+          </div>
+          <div class="link-card-body">
+            <div class="link-title">Razorpay 1-Click Fallback Checkout</div>
+            <div class="link-desc">Dynamic UPI QR • Credit / Debit Cards • NetBanking</div>
+            <div class="link-action">
+              <span>Tap to complete payment securely →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE-UP CHECKOUT MODAL -->
+    <div class="checkout-sheet" id="checkoutSheet">
+      <div class="sheet-handle" onclick="closeCheckout()"></div>
+      
+      <div id="sheetContent">
+        <div class="sheet-title-row">
+          <div class="sheet-title" id="sheetHeaderTitle">1-Click Fallback Checkout</div>
+          <div class="timer-badge" id="sheetTimerBadge">⏱️ <span id="timerText">14:59</span></div>
+        </div>
+
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 0.75rem; margin-bottom: 1rem;">
+          <div style="font-size: 0.72rem; color: #64748B;">Order Reference: <strong id="orderIdText" style="color: #0F172A;">order_991</strong></div>
+          <div style="font-size: 1.15rem; font-weight: 900; color: #2563EB; margin-top: 0.2rem;" id="modalAmountDisplay">₹<span id="modalAmount">14,999.00</span></div>
+          <div id="modalStatusBadge" style="display:none; font-size: 0.75rem; font-weight: 800; color: #10B981; margin-top: 0.3rem;">✅ PAID & CAPTURED</div>
+        </div>
+
+        <!-- PAYMENT OPTIONS (For Rahul & Priya) -->
+        <div id="paymentOptionsSection">
+          <div style="font-size: 0.72rem; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 0.5rem;">Select Payment Method</div>
+
+          <!-- Dynamic UPI Apps -->
+          <div class="rail-item selected" onclick="selectRail(this)">
+            <div class="rail-info">
+              <div class="rail-icon">⚡</div>
+              <div>
+                <div class="rail-name">Instant UPI Apps</div>
+                <div class="rail-sub">Google Pay • PhonePe • Paytm • CRED UPI</div>
+              </div>
+            </div>
+            <input type="radio" name="r" checked style="accent-color: #2563EB;">
+          </div>
+
+          <!-- Dynamic QR -->
+          <div class="rail-item" onclick="selectRail(this)">
+            <div class="rail-info">
+              <div class="rail-icon">📷</div>
+              <div>
+                <div class="rail-name">Dynamic UPI QR Code</div>
+                <div class="rail-sub">Scan with any UPI app (Zero timeout risk)</div>
+              </div>
+            </div>
+            <input type="radio" name="r" style="accent-color: #2563EB;">
+          </div>
+
+          <!-- Cards -->
+          <div class="rail-item" onclick="selectRail(this)">
+            <div class="rail-info">
+              <div class="rail-icon">💳</div>
+              <div>
+                <div class="rail-name">Cards (Credit / Debit)</div>
+                <div class="rail-sub">HDFC, SBI, ICICI, Axis • Visa, RuPay, MC</div>
+              </div>
+            </div>
+            <input type="radio" name="r" style="accent-color: #2563EB;">
+          </div>
+
+          <!-- NetBanking -->
+          <div class="rail-item" onclick="selectRail(this)">
+            <div class="rail-info">
+              <div class="rail-icon">🏛️</div>
+              <div>
+                <div class="rail-name">Net Banking</div>
+                <div class="rail-sub">SBI, HDFC, ICICI, Axis & 50+ Banks</div>
+              </div>
+            </div>
+            <input type="radio" name="r" style="accent-color: #2563EB;">
+          </div>
+
+          <button class="btn-complete" onclick="finishPayment()">
+            Pay ₹<span id="btnAmount">14,999.00</span> via Razorpay Secure →
+          </button>
+        </div>
+
+        <!-- CONFIRMED RECEIPT VIEW (For Sneha Gupta) -->
+        <div id="receiptSection" style="display: none;">
+          <div style="background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 1rem;">
+            <div style="font-size: 2rem;">✅</div>
+            <div style="font-weight: 800; color: #065F46; font-size: 0.95rem; margin-top: 0.25rem;">Payment Already Successful</div>
+            <div style="font-size: 0.72rem; color: #047857; margin-top: 0.2rem;">Razorpay verified this payment was captured by your bank. No further payment required.</div>
+          </div>
+
+          <div style="font-size: 0.75rem; color: #475569; space-y: 0.5rem; border-top: 1px dashed #CBD5E1; padding-top: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+              <span>Payment Status:</span>
+              <strong style="color: #10B981;">CAPTURED</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+              <span>Amount Paid:</span>
+              <strong style="color: #0F172A;">₹<span id="receiptAmount">899.00</span></strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+              <span>Estimated Delivery:</span>
+              <strong>Tomorrow by 6:00 PM</strong>
+            </div>
+          </div>
+
+          <button class="btn-complete" style="background: #10B981;" onclick="closeCheckout()">
+            View Delivery Status ✓
+          </button>
+        </div>
+
+      </div>
+
+      <!-- SUCCESS STATE -->
+      <div class="success-view" id="successView">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎉</div>
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: #10B981; margin-bottom: 0.25rem;">Payment Recovered!</h3>
+        <p style="font-size: 0.75rem; color: #64748B; margin-bottom: 1rem;">Order confirmation sent. Autonomous recovery successfully won back this customer.</p>
+        <button class="btn-complete" onclick="closeCheckout()">Back to Messages</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const pathParts = window.location.pathname.split('/');
+    const orderId = pathParts[pathParts.length - 1] || 'default';
+
+    let isVoiceScenario = false;
+
+    async function loadOrder() {
+      try {
+        const res = await fetch(`/api/checkout-order/${orderId}`);
+        const data = await res.json();
+        const name = data.customer?.name || 'Valued Customer';
+        const amtStr = ((data.amount || 1499900) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const oId = data.orderId || orderId;
+
+        const isVoiceCall = !oId.includes('778') && !oId.includes('442') && !oId.includes('321') && !name.includes('Sneha') && !name.includes('Amit') && !name.includes('Priya');
+        isVoiceScenario = isVoiceCall;
+
+        const pressOneBtn = document.getElementById('pressOneBtn');
+        if (pressOneBtn) {
+          pressOneBtn.style.display = isVoiceCall ? 'flex' : 'none';
+        }
+
+        document.getElementById('modalAmount').innerText = amtStr;
+        document.getElementById('btnAmount').innerText = amtStr;
+        document.getElementById('receiptAmount').innerText = amtStr;
+        document.getElementById('orderIdText').innerText = oId;
+        const pushAmtElem = document.getElementById('pushAmt');
+        if (pushAmtElem) pushAmtElem.innerText = amtStr;
+
+        const bubble = document.querySelector('.sms-bubble');
+        const paymentOptionsSection = document.getElementById('paymentOptionsSection');
+        const receiptSection = document.getElementById('receiptSection');
+        const sheetHeaderTitle = document.getElementById('sheetHeaderTitle');
+        const sheetTimerBadge = document.getElementById('sheetTimerBadge');
+        const modalStatusBadge = document.getElementById('modalStatusBadge');
+
+        if (oId.includes('778') || name.includes('Sneha')) {
+          // SNEHA GUPTA: Bank Captured / Ghost Settle
+          paymentOptionsSection.style.display = 'none';
+          receiptSection.style.display = 'block';
+          sheetHeaderTitle.innerText = 'Order Confirmation Receipt';
+          sheetTimerBadge.style.display = 'none';
+          modalStatusBadge.style.display = 'block';
+
+          bubble.innerHTML = `
+            <strong>FikrNot:</strong> Good News <strong>${name}</strong> ji! 🎉
+            <br><br>
+            Aapka <strong>₹${amtStr}</strong> ka payment bank se successfully <strong>CAPTURE</strong> ho gaya hai.
+            <br><br>
+            🛡️ Pre-verification confirmed: Aapka order confirm ho chuka hai — <strong>koi extra payment karne ki zaroorat nahi hai</strong>.
+            <div class="link-card" onclick="openCheckout()" style="border-color: #10B981; background: #ECFDF5;">
+              <div class="link-card-header" style="background: #10B981;">
+                <span>✅ ORDER CONFIRMED</span>
+                <span>₹${amtStr}</span>
+              </div>
+              <div class="link-card-body">
+                <div class="link-title" style="color: #065F46;">Payment Verified by Razorpay</div>
+                <div class="link-desc">Your order is processing. Zero risk of double charges.</div>
+                <div class="link-action" style="color: #059669;">
+                  <span>Tap to view order confirmation receipt →</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (oId.includes('442') || name.includes('Amit')) {
+          // AMIT PATEL: Cancelled
+          sheetHeaderTitle.innerText = 'Saved Cart Checkout';
+          sheetTimerBadge.innerText = '💾 Saved in Cart';
+          sheetTimerBadge.style.background = '#F1F5F9';
+          sheetTimerBadge.style.color = '#475569';
+          sheetTimerBadge.style.borderColor = '#CBD5E1';
+
+          bubble.innerHTML = `
+            <strong>FikrNot:</strong> Namaste <strong>${name}</strong> ji,
+            <br><br>
+            Humne dekha aapne checkout cancel kiya tha. Agar aapka mind change ho, toh aapka cart <strong>₹${amtStr}</strong> ke liye save hai:
+            <div class="link-card" onclick="openCheckout()">
+              <div class="link-card-header" style="background: #64748B;">
+                <span>🛒 SAVED CART</span>
+                <span>₹${amtStr}</span>
+              </div>
+              <div class="link-card-body">
+                <div class="link-title">Resume Your Order When Ready</div>
+                <div class="link-desc">Dynamic UPI QR • Credit / Debit Cards • NetBanking</div>
+                <div class="link-action">
+                  <span>Tap to complete payment securely →</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (oId.includes('321') || name.includes('Priya')) {
+          // PRIYA VERMA: Minor network glitch
+          bubble.innerHTML = `
+            <strong>FikrNot:</strong> Namaste <strong>${name}</strong> ji,
+            <br><br>
+            Checkout par minor network glitch hua tha. Aapka <strong>₹${amtStr}</strong> ka cart 15 min ke liye reserved hai.
+            <br><br>
+            1-click mein complete karne ke liye tap karein:
+            <div class="link-card" onclick="openCheckout()">
+              <div class="link-card-header" style="background: #059669;">
+                <span>🛒 CART RESERVED (15m)</span>
+                <span>₹${amtStr}</span>
+              </div>
+              <div class="link-card-body">
+                <div class="link-title">Razorpay 1-Click Fallback Checkout</div>
+                <div class="link-desc">Dynamic UPI QR • Credit / Debit Cards • NetBanking</div>
+                <div class="link-action" style="color: #059669;">
+                  <span>Tap to complete payment securely →</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          // RAHUL SHARMA: UPI Timeout / Debit Risk
+          bubble.innerHTML = `
+            <strong>FikrNot:</strong> Namaste <strong>${name}</strong> ji, humne dekha aapka UPI session time out ho gaya.
+            <br><br>
+            🛡️ Fikr mat kijiye, agar paise kate hain toh <strong>bank auto-reversal</strong> ho jayega.
+            <br><br>
+            Aapka cart <strong>15 minute ke liye reserved</strong> hai. 1-click mein complete karne ke liye tap karein:
+            <div class="link-card" onclick="openCheckout()">
+              <div class="link-card-header" style="background: #2563EB;">
+                <span>🛒 CART RESERVED (15m)</span>
+                <span>₹${amtStr}</span>
+              </div>
+              <div class="link-card-body">
+                <div class="link-title">Razorpay 1-Click Fallback Checkout</div>
+                <div class="link-desc">Dynamic UPI QR • Credit / Debit Cards • NetBanking</div>
+                <div class="link-action">
+                  <span>Tap to complete payment securely →</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      } catch (e) {}
+    }
+
+    function openCheckout() {
+      document.getElementById('checkoutSheet').classList.add('active');
+    }
+
+    function closeCheckout() {
+      document.getElementById('checkoutSheet').classList.remove('active');
+    }
+
+    function selectRail(el) {
+      document.querySelectorAll('.rail-item').forEach(item => {
+        item.classList.remove('selected');
+        item.querySelector('input').checked = false;
+      });
+      el.classList.add('selected');
+      el.querySelector('input').checked = true;
+    }
+
+    let paymentCompleted = false;
+    let lastHandledIvrTime = null;
+
+    function finishPayment() {
+      if (paymentCompleted) return;
+      const btn = document.querySelector('#paymentOptionsSection .btn-complete');
+      const origText = btn.innerText;
+      btn.innerText = 'Processing Payment via Razorpay...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        paymentCompleted = true;
+        btn.innerText = origText;
+        btn.disabled = false;
+        closeCheckout();
+
+        // Dismiss push banner
+        const banner = document.getElementById('pushBanner');
+        if (banner) banner.classList.remove('active');
+
+        const amt = document.getElementById('modalAmount').innerText;
+        const oId = document.getElementById('orderIdText').innerText;
+        const messagesArea = document.querySelector('.messages-area');
+
+        // Append real-time incoming SMS confirmation bubble
+        const newBubble = document.createElement('div');
+        newBubble.className = 'sms-bubble';
+        newBubble.style.borderLeft = '4px solid #10B981';
+        newBubble.style.background = '#F0FDF4';
+        newBubble.innerHTML = `
+          <strong>FikrNot:</strong> 🎉 <strong>Payment Received Successfully!</strong>
+          <br><br>
+          Aapka <strong>₹${amt}</strong> ka payment safely receive ho gaya hai via Razorpay.
+          <br><br>
+          Order <strong>#${oId}</strong> confirm ho chuka hai. Cart reservation release ho gayi hai.
+          <br><br>
+          📦 <strong>Delivery Status:</strong> Shipping in 24 hours.
+        `;
+        messagesArea.appendChild(newBubble);
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+      }, 900);
+    }
+
+    function showPushBanner() {
+      if (paymentCompleted) return;
+      const banner = document.getElementById('pushBanner');
+      banner.classList.add('active');
+      setTimeout(() => {
+        // Automatically open checkout if user hasn't clicked and hasn't paid
+        if (!paymentCompleted) {
+          openCheckout();
+        }
+      }, 1500);
+    }
+
+    function triggerPressOneDemo() {
+      paymentCompleted = false;
+      showPushBanner();
+    }
+
+    // Poll IVR status in real-time if phone call is active (only trigger once per new event)
+    setInterval(async () => {
+      if (paymentCompleted || !isVoiceScenario) return;
+      try {
+        const res = await fetch('/api/ivr-status');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.latestIvrEvent?.digit === '1' && data.latestIvrEvent.timestamp !== lastHandledIvrTime) {
+            lastHandledIvrTime = data.latestIvrEvent.timestamp;
+            showPushBanner();
+          }
+        }
+      } catch (e) {}
+    }, 1500);
+
+    // Timer
+    let secs = 14 * 60 + 59;
+    setInterval(() => {
+      if (secs <= 0) return;
+      secs--;
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      document.getElementById('timerText').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }, 1000);
+
+    loadOrder();
+  </script>
+</body>
+</html>
