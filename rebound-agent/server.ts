@@ -191,7 +191,7 @@ app.get("/api/checkout-order/:orderId", (req, res) => {
       orderId: orderId,
       transactionId: "pay_low_val_002",
       amount: 29900,
-      customer: { name: "Priya Verma", phone: "+917982957206" },
+      customer: { name: "Priya Verma", phone: "+91 98112 34567" },
       errorDescription: "Network Glitch",
       isDebitedRisk: false
     });
@@ -200,7 +200,7 @@ app.get("/api/checkout-order/:orderId", (req, res) => {
       orderId: orderId,
       transactionId: "pay_user_cancelled_003",
       amount: 450000,
-      customer: { name: "Amit Patel", phone: "+917982957206" },
+      customer: { name: "Amit Patel", phone: "+91 99234 56789" },
       errorDescription: "Customer Cancelled",
       isDebitedRisk: false
     });
@@ -209,7 +209,7 @@ app.get("/api/checkout-order/:orderId", (req, res) => {
       orderId: orderId,
       transactionId: "pay_captured_already_004",
       amount: 89900,
-      customer: { name: "Sneha Gupta", phone: "+917982957206" },
+      customer: { name: "Sneha Gupta", phone: "+91 97890 12345" },
       errorDescription: "Gateway Timeout",
       isDebitedRisk: true
     });
@@ -220,7 +220,7 @@ app.get("/api/checkout-order/:orderId", (req, res) => {
     orderId: orderId,
     transactionId: `pay_${orderId}`,
     amount: 1499900,
-    customer: { name: "Rahul Sharma", phone: "+917982957206" },
+    customer: { name: "Rahul Sharma", phone: "+91 98765 43210" },
     errorDescription: "UPI Timeout",
     isDebitedRisk: true
   });

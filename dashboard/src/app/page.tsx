@@ -45,7 +45,7 @@ export default function SimpleCleanDashboard() {
     {
       id: "demo_1",
       customerName: "Rahul Sharma",
-      phone: "+917982957206",
+      phone: "+91 98765 43210",
       amount: 14999,
       problem: "UPI App-Switch Timed Out (Customer Panicked)",
       whatAgentDid: "📞 Placed Hinglish Voice Call + 15m Cart Reserve",
@@ -58,7 +58,7 @@ export default function SimpleCleanDashboard() {
     {
       id: "demo_2",
       customerName: "Priya Verma",
-      phone: "+917982957206",
+      phone: "+91 98112 34567",
       amount: 299,
       problem: "Minor Network Glitch at Checkout",
       whatAgentDid: "✉️ Sent 1-Click SMS Fallback Link",
@@ -69,7 +69,7 @@ export default function SimpleCleanDashboard() {
     {
       id: "demo_3",
       customerName: "Amit Patel",
-      phone: "+917982957206",
+      phone: "+91 99234 56789",
       amount: 4500,
       problem: "Customer Clicked 'Cancel' Button",
       whatAgentDid: "🛑 Stopped Outreach (Zero Spam)",
@@ -80,7 +80,7 @@ export default function SimpleCleanDashboard() {
     {
       id: "demo_4",
       customerName: "Sneha Gupta",
-      phone: "+917982957206",
+      phone: "+91 97890 12345",
       amount: 899,
       problem: "Bank Captured Payment in Background",
       whatAgentDid: "🛡️ Aborted Call (Prevent Double Charge)",
@@ -123,7 +123,7 @@ export default function SimpleCleanDashboard() {
           transactionId: `pay_demo_${Date.now()}`,
           orderId: "order_high_val_991",
           amount: 1499900,
-          customer: { name: "Rahul Sharma", phone: "+917982957206" },
+          customer: { name: "Rahul Sharma", phone: "+91 98765 43210" },
           errorCode: "BAD_REQUEST_PAYMENT_TIMED_OUT",
           errorDescription: "UPI session timed out during app switch",
           isDebitedRisk: true,
@@ -193,7 +193,7 @@ export default function SimpleCleanDashboard() {
               ) : (
                 <>
                   <PhoneCall className="w-4 h-4 animate-bounce" />
-                  <span>⚡ Test Live Voice Call (+917982957206)</span>
+                  <span>⚡ Test Live Voice Call</span>
                 </>
               )}
             </button>

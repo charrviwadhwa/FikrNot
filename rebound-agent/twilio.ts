@@ -10,7 +10,8 @@ const client = twilio(accountSid, authToken);
 
 export async function makeReassuranceCall(toPhoneNumber: string, audioFilename: string) {
   try {
-    console.log(`[TWILIO] Initiating call to ${toPhoneNumber}...`);
+    const targetPhone = process.env.TWILIO_VERIFIED_NUMBER || toPhoneNumber;
+    console.log(`[TWILIO] Initiating call to ${targetPhone}...`);
     
     // Fallback base URL if not set
     const baseUrl = process.env.SERVER_BASE_URL || "http://localhost:3000";
@@ -19,7 +20,7 @@ export async function makeReassuranceCall(toPhoneNumber: string, audioFilename: 
     // Twilio trial accounts require the 'url' parameter instead of inline 'twiml'
     const call = await client.calls.create({
       url: twimlUrl,
-      to: toPhoneNumber,
+      to: targetPhone,
       from: fromNumber
     });
     console.log(`[TWILIO] Call successfully dispatched! Call SID: ${call.sid}`);
