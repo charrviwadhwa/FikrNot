@@ -123,6 +123,34 @@ flowchart LR
 - **Frontend and Dashboard**: Next.js 14, Tailwind CSS, TypeScript, Lucide Icons
 - **Backend Server**: Node.js, Express, TypeScript
 
+## Engineering Principles and Safety Philosophy
+
+### 1. High-Impact Problem Scope
+- **The Problem**: Over $30B in Indian e-commerce checkout revenue is lost annually to UPI session timeouts and app-switch glitches.
+- **The Human Pain Point**: When a payment drops after entering a UPI PIN, buyers experience intense debit anxiety (wondering if their money was lost or if their order confirmed) while limited flash-sale inventory goes out of stock.
+- **Why It Matters**: Instead of building generic support bots, FikrNot attacks the single highest-intent drop-off point in Indian commerce.
+
+### 2. Enterprise Build Quality and Reliability
+- **Full-Stack Implementation**: Production-grade Next.js 14 frontend, TypeScript backend, and sub-500ms webhook ingestion.
+- **Real Telephony and DTMF**: Live Twilio integration with DTMF keypress capture, active call state monitoring, and automated audio synthesis.
+- **Reliable Cart Management**: 15-minute inventory reservation locks implemented with Redis TTL leases to prevent race conditions.
+
+### 3. AI Philosophy: Where We Use AI (and Where We Do Not)
+- **Where We Use AI**:
+  - **Google Gemini 2.5 Flash**: Emotional panic scoring, intent classification, and dynamic Hinglish contextual reasoning.
+  - **Sarvam AI**: Natural, low-latency Indic speech synthesis tailored for colloquial Indian commerce.
+- **Where We Explicitly Choose NOT to Use AI**:
+  - **Deterministic Safety Guardrails**: We do not use LLMs for financial settlement decisions or stopping rules.
+  - **Pre-Flight Verification**: Strict API checks verify whether Razorpay already captured the payment to prevent double charges.
+  - **Hard Stops**: Deterministic logic halts outreach if a buyer intentionally clicks cancel.
+
+### 4. Resilient Session and Failure Recovery
+- **What Breaks**: UPI app-switching between merchant apps and bank apps frequently times out or drops network packets.
+- **How FikrNot Recovers**:
+  1. **Sub-10s Reassurance**: Proactively dials the customer in Hinglish to explain that bank deductions auto-reverse in 48 hours.
+  2. **15-Minute Inventory Lock**: Holds limited-stock cart items exclusively for the buyer to eliminate stockout fear.
+  3. **Alternative Fallback Rails**: Provides Dynamic UPI QR and direct collect pushes on the recovery sheet, bypassing the broken app-switch loop.
+
 ---
 
 ## Getting Started Locally
