@@ -19,8 +19,6 @@ In India, UPI powers billions of transactions monthly. However, **app-switch tim
 ### 1. Pre-Flight Verification and Decision Engine Pipeline
 This phase ingests the Razorpay webhook, applies idempotency checks, verifies true settlement status via Razorpay APIs, and scores customer panic to select the optimal channel.
 
-![Pre-Flight and Decision Pipeline](./assets/mermaid-ai-diagram-2026-09-05-090558.png)
-
 ```mermaid
 flowchart LR
     A([Customer at Checkout]) --> B[Payment Session Interrupted]
@@ -54,8 +52,6 @@ flowchart LR
 
 ### 2. Telephony Execution and 1-Click Fallback Pipeline
 For high-panic failures, the autonomous voice agent initiates a conversational Hinglish call via Twilio + Sarvam AI. Keypress consent captures intent without asking for passwords, locking the customer's cart for 15 minutes.
-
-![Telephony Execution and 1-Click Fallback](./assets/mermaid-ai-diagram-2026-09-05-090613.png)
 
 ```mermaid
 flowchart LR
