@@ -1,526 +1,480 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  Play,
-  Pause,
-  PhoneCall,
-  MessageSquare,
-  ShieldCheck,
-  ExternalLink,
-  CheckCircle2,
-  X,
-  Zap,
-  TrendingUp,
+import React, { useState } from "react";
+import Link from "next/link";
+import { 
+  ShieldCheck, 
+  PhoneCall, 
+  Zap, 
+  TrendingUp, 
+  ArrowRight, 
+  MessageSquare, 
+  ArrowUpRight, 
+  Sparkles, 
+  Clock, 
+  Globe, 
+  CheckCircle2, 
   Volume2,
-  Clock,
-  Sparkles
+  Activity
 } from "lucide-react";
 
-interface RecoveryItem {
-  id: string;
-  customerName: string;
-  phone: string;
-  amount: number;
-  problem: string;
-  whatAgentDid: string;
-  statusType: "VOICE" | "SMS" | "STOP";
-  hinglishScript?: string;
-  audioFilename?: string;
-  orderId: string;
-  reason: string;
-}
+export default function LandingPage() {
+  const [activeTab, setActiveTab] = useState("Home");
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://fikrnot.onrender.com";
-
-export default function SimpleCleanDashboard() {
-  const [mounted, setMounted] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<RecoveryItem | null>(null);
-  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const [callingState, setCallingState] = useState(false);
-  const [callSuccessMessage, setCallSuccessMessage] = useState("");
-
-  // 4 Crystal Clear Scenarios
-  const [items, setItems] = useState<RecoveryItem[]>([
-    {
-      id: "demo_1",
-      customerName: "Rahul Sharma",
-      phone: "+91 98765 43210",
-      amount: 14999,
-      problem: "UPI App-Switch Timed Out (Customer Panicked)",
-      whatAgentDid: "📞 Placed Hinglish Voice Call + 15m Cart Reserve",
-      statusType: "VOICE",
-      hinglishScript: "Namaste Rahul Sharma ji, humne dekha aapka UPI session time out ho gaya. Fikr mat kijiye, agar paise kate hain toh bank auto-reverse ho jayenge. Aapka cart 15 minute ke liye reserve hai. Agar aap abhi pay karna chahte hain toh dialpad par 1 dabayein. Dhanyawaad!",
-      audioFilename: "pay_test_live_reassurance.wav",
-      orderId: "order_high_val_991",
-      reason: "High-value smartphone purchase failed during app switch. Customer had debit anxiety, so the agent called immediately with reassurance and locked the cart for 15 minutes."
-    },
-    {
-      id: "demo_2",
-      customerName: "Priya Verma",
-      phone: "+91 98112 34567",
-      amount: 299,
-      problem: "Minor Network Glitch at Checkout",
-      whatAgentDid: "✉️ Sent 1-Click SMS Fallback Link",
-      statusType: "SMS",
-      orderId: "order_321",
-      reason: "Low amount and no bank debit risk. The agent avoided an intrusive phone call and sent a fast 1-click fallback link via SMS."
-    },
-    {
-      id: "demo_3",
-      customerName: "Amit Patel",
-      phone: "+91 99234 56789",
-      amount: 4500,
-      problem: "Customer Clicked 'Cancel' Button",
-      whatAgentDid: "🛑 Stopped Outreach (Zero Spam)",
-      statusType: "STOP",
-      orderId: "order_442",
-      reason: "Customer intentionally cancelled at checkout. The agent's stopping rule kicked in to prevent spamming the buyer."
-    },
-    {
-      id: "demo_4",
-      customerName: "Sneha Gupta",
-      phone: "+91 97890 12345",
-      amount: 899,
-      problem: "Bank Captured Payment in Background",
-      whatAgentDid: "🛡️ Aborted Call (Prevent Double Charge)",
-      statusType: "STOP",
-      orderId: "order_778",
-      reason: "Gateway timed out, but Razorpay API verified the bank already captured the money. Agent aborted outreach to prevent asking for money twice."
-    }
-  ]);
-
-  const [ivrBanner, setIvrBanner] = useState<string | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/ivr-status`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.latestIvrEvent?.message) {
-            setIvrBanner(data.latestIvrEvent.message);
-          }
-        }
-      } catch (e) { }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const triggerLivePhoneCall = async () => {
-    setCallingState(true);
-    setCallSuccessMessage("");
-    setIvrBanner(null);
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/trigger`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          transactionId: `pay_demo_${Date.now()}`,
-          orderId: "order_high_val_991",
-          amount: 1499900,
-          customer: { name: "Rahul Sharma", phone: "+91 98765 43210" },
-          errorCode: "BAD_REQUEST_PAYMENT_TIMED_OUT",
-          errorDescription: "UPI session timed out during app switch",
-          isDebitedRisk: true,
-          createdAt: new Date().toISOString()
-        })
-      });
-
-      if (res.ok) {
-        setCallSuccessMessage("📞 Phone call dispatched! Your phone is ringing now. Press 1 on your dialpad when asked.");
-      } else {
-        setCallSuccessMessage("⚠️ Backend check: Server on port 3000.");
-      }
-    } catch (e: any) {
-      setCallSuccessMessage("Error: " + e.message);
-    } finally {
-      setCallingState(false);
-    }
-  };
-
-  const toggleAudio = (filename: string) => {
-    const audioUrl = `${BACKEND_URL}/${filename}`;
-    if (playingAudio === audioUrl) {
-      setPlayingAudio(null);
-    } else {
-      setPlayingAudio(audioUrl);
-      const audio = new Audio(audioUrl);
-      audio.play();
-      audio.onended = () => setPlayingAudio(null);
-    }
-  };
-
-  if (!mounted) return null;
+  const navItems = [
+    { label: "Home", href: "#home" },
+    { label: "Features", href: "#features" },
+    { label: "Advantages", href: "#advantages" }
+  ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans p-4 sm:p-8 flex justify-center items-start">
-      <div className="w-full max-w-[1240px] bg-white rounded-3xl shadow-xl border border-slate-200/90 overflow-hidden p-6 sm:p-8">
+    <div className="min-h-screen bg-[#FBFBFC] text-slate-900 font-sans selection:bg-blue-500/20 antialiased scroll-smooth">
+      {/* Top Floating Ambient Glow */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-64 bg-gradient-to-b from-blue-100/40 via-purple-50/20 to-transparent blur-3xl pointer-events-none -z-10" />
 
-        {/* ================= HEADER ================= */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-100">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-black flex items-center justify-center text-sm shadow-sm">
-                FN
-              </div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">FikrNot</h1>
-              <span className="text-xs bg-blue-50 text-blue-700 font-bold px-2.5 py-0.5 rounded-full border border-blue-200">
-                Razorpay Buildathon • Track 03
-              </span>
+      {/* Header & Navbar */}
+      <header className="sticky top-0 z-50 bg-[#FBFBFC]/80 backdrop-blur-md transition-all">
+        <nav className="max-w-[1240px] mx-auto px-6 py-5 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="#home" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-blue-500 flex items-center justify-center shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform">
+              <ShieldCheck className="w-5 h-5 text-white" />
             </div>
-            <p className="text-sm text-slate-500">
-              Autonomous AI agent that detects failed UPI checkout drops and recovers lost revenue.
-            </p>
-          </div>
+            <span className="text-2xl font-bold tracking-tight text-slate-900">FikrNot</span>
+          </Link>
 
-          {/* BIG LIVE ACTION BUTTON FOR DEMO VIDEO */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={triggerLivePhoneCall}
-              disabled={callingState}
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-5 py-3 rounded-2xl shadow-lg shadow-emerald-600/20 transition disabled:opacity-50"
-            >
-              {callingState ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Dialing Your Phone...</span>
-                </>
-              ) : (
-                <>
-                  <PhoneCall className="w-4 h-4 animate-bounce" />
-                  <span>⚡ Test Live Voice Call</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* CALL STATUS BANNER */}
-        {callSuccessMessage && (
-          <div className="mb-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm font-bold flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-              <span>{callSuccessMessage}</span>
-            </div>
-            <button onClick={() => setCallSuccessMessage("")} className="text-emerald-700 hover:text-emerald-900">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* LIVE IVR DTMF KEYPRESS BANNER */}
-        {ivrBanner && (
-          <div className="mb-6 p-4 rounded-2xl bg-indigo-600 text-white text-sm font-bold flex items-center justify-between shadow-lg shadow-indigo-600/30 animate-pulse">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-white text-indigo-600 flex items-center justify-center font-black text-xs">
-                IVR
-              </div>
-              <div>
-                <div className="text-xs uppercase tracking-wider text-indigo-200 font-extrabold">Live Telephony Event</div>
-                <div className="text-sm font-black">{ivrBanner}</div>
-              </div>
-            </div>
-            <button onClick={() => setIvrBanner(null)} className="text-indigo-200 hover:text-white">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* ================= 3 SIMPLE SUMMARY CARDS ================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          {/* Card 1 */}
-          <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-sm flex items-center justify-between">
-            <div>
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-1">
-                Recovered Revenue
-              </span>
-              <div className="text-3xl font-black text-white tracking-tight">₹ 3,48,122</div>
-              <div className="text-xs text-emerald-400 font-bold mt-1">
-                +82% of abandoned carts saved
-              </div>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-blue-600 text-white font-black text-xl flex items-center justify-center">
-              ₹
-            </div>
-          </div>
-
-          {/* Card 2 */}
-          <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex items-center justify-between">
-            <div>
-              <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">
-                Hinglish Voice Calls
-              </span>
-              <div className="text-3xl font-black text-slate-900 tracking-tight">14 Calls</div>
-              <div className="text-xs text-indigo-600 font-bold mt-1">
-                Sarvam AI + Gemini Voice
-              </div>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <Volume2 className="w-6 h-6" />
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex items-center justify-between">
-            <div>
-              <span className="text-xs text-slate-500 font-bold uppercase tracking-wider block mb-1">
-                1-Click SMS Fallbacks
-              </span>
-              <div className="text-3xl font-black text-slate-900 tracking-tight">32 Carts</div>
-              <div className="text-xs text-emerald-600 font-bold mt-1">
-                15-Min Cart Reservation
-              </div>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <Clock className="w-6 h-6" />
-            </div>
-          </div>
-        </div>
-
-        {/* ================= VISUAL FLOW: PRESS 1 TO PAY ARCHITECTURE ================= */}
-        <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-slate-50 border border-blue-200/80">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
-                <span className="text-xs font-black uppercase tracking-wider text-blue-800">Visual End-to-End Recovery Flow</span>
-              </div>
-              <h3 className="text-base font-black text-slate-900 mt-0.5">What Happens When a Customer Drops & Presses '1'</h3>
-            </div>
-            <a
-              href={`${BACKEND_URL}/checkout/order_high_val_991`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl shadow transition flex items-center gap-1"
-            >
-              <span>Open Mobile Simulator 📱</span>
-            </a>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Step 1 */}
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative">
-              <span className="absolute -top-2.5 left-4 bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
-                STEP 1
-              </span>
-              <div className="flex items-center gap-2 mt-1 mb-2">
-                <span className="text-lg">📞</span>
-                <h4 className="text-xs font-black text-slate-900">AI Reassurance Call</h4>
-              </div>
-              <p className="text-[11px] text-slate-600 leading-snug">
-                Gemini & Sarvam AI call in Hinglish, comforting debit anxiety: <em>"Fikr mat kijiye, agar paise kate hain toh bank auto-reverse ho jayega."</em>
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm relative">
-              <span className="absolute -top-2.5 left-4 bg-indigo-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
-                STEP 2
-              </span>
-              <div className="flex items-center gap-2 mt-1 mb-2">
-                <span className="text-lg">🔢</span>
-                <h4 className="text-xs font-black text-slate-900">Press '1' on Dialpad</h4>
-              </div>
-              <p className="text-[11px] text-slate-600 leading-snug">
-                Customer presses <strong>1</strong> on their phone keypad. Twilio DTMF captures consent securely without asking for UPI PIN or passwords.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-sm relative">
-              <span className="absolute -top-2.5 left-4 bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
-                STEP 3
-              </span>
-              <div className="flex items-center gap-2 mt-1 mb-2">
-                <span className="text-lg">⚡</span>
-                <h4 className="text-xs font-black text-slate-900">GPay Push + 15m Cart Lock</h4>
-              </div>
-              <p className="text-[11px] text-slate-600 leading-snug">
-                Instant UPI Push Collect Request drops on phone + 1-Click Fallback link unlocks with 15-min inventory protection.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* ================= 4 CLEAR RECOVERY SCENARIOS ================= */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-black text-slate-900">How the Agent Recovers Failed Payments</h2>
-              <p className="text-xs text-slate-500">4 distinct real-world situations handled autonomously by FikrNot</p>
-            </div>
-            <span className="text-xs font-bold text-slate-400">Click any row to test & listen</span>
-          </div>
-
-          <div className="space-y-3">
-            {items.map((item, idx) => {
-              let badgeColor = "bg-indigo-50 text-indigo-700 border-indigo-200";
-              let actionTitle = "📞 Voice Call Escalation";
-
-              if (item.statusType === "SMS") {
-                badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                actionTitle = "✉️ 1-Click SMS Fallback";
-              } else if (item.statusType === "STOP") {
-                badgeColor = "bg-slate-100 text-slate-700 border-slate-200";
-                actionTitle = "🛑 Bounded Stop (No Spam)";
-              }
-
+          {/* Centered Pill Navigation */}
+          <div className="flex items-center bg-white/95 shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-slate-200/80 rounded-full p-1.5 gap-1">
+            {navItems.map((item) => {
+              const isActive = activeTab === item.label;
               return (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedItem(item)}
-                  className="p-4 rounded-2xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-md cursor-pointer transition flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setActiveTab(item.label)}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs md:text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? "bg-slate-100/90 text-slate-900 font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
                 >
-                  {/* Left: Customer & Problem */}
-                  <div className="flex items-start sm:items-center gap-3 min-w-[280px]">
-                    <div className="w-10 h-10 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
-                      {item.customerName.charAt(0)}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-slate-900">{item.customerName}</span>
-                        <span className="text-xs font-black text-blue-600">₹{item.amount.toLocaleString("en-IN")}</span>
-                      </div>
-                      <p className="text-xs text-rose-600 font-semibold mt-0.5 flex items-center gap-1">
-                        <span>⚠️</span>
-                        <span>{item.problem}</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Middle: What the Agent Did */}
-                  <div className="flex-1">
-                    <span className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-xl border ${badgeColor}`}>
-                      <span>{item.whatAgentDid}</span>
-                    </span>
-                  </div>
-
-                  {/* Right: Action Buttons */}
-                  <div className="flex items-center gap-2">
-                    {item.audioFilename && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleAudio(item.audioFilename!);
-                        }}
-                        className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-sm"
-                      >
-                        {playingAudio === `${BACKEND_URL}/${item.audioFilename}` ? (
-                          <>
-                            <Pause className="w-3.5 h-3.5" />
-                            <span>Pause Call</span>
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-3.5 h-3.5" />
-                            <span>▶ Listen Call</span>
-                          </>
-                        )}
-                      </button>
-                    )}
-
-                    <a
-                      href={`${BACKEND_URL}/checkout/${item.orderId}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-3 py-2 rounded-xl transition"
-                    >
-                      <span>View Checkout</span>
-                      <ExternalLink className="w-3 h-3 text-slate-500" />
-                    </a>
-                  </div>
-                </div>
+                  {isActive && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />}
+                  <span>{item.label}</span>
+                </a>
               );
             })}
           </div>
-        </div>
-      </div>
 
-      {/* ================= DETAIL MODAL ================= */}
-      {selectedItem && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative">
-            <button
-              onClick={() => setSelectedItem(null)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 p-1"
+          {/* Live Console Quick Link */}
+          <div className="flex items-center">
+            <Link
+              href="/demo"
+              className="flex items-center gap-1.5 text-xs md:text-sm font-semibold text-slate-700 hover:text-blue-600 px-4 py-2 rounded-full hover:bg-blue-50/80 transition-colors"
             >
-              <X className="w-5 h-5" />
-            </button>
+              <span>Operational Dashboard</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </nav>
+      </header>
 
-            {/* Modal Header */}
-            <div className="flex items-center gap-3 pb-4 mb-4 border-b border-slate-100">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                <Sparkles className="w-5 h-5" />
+      {/* Hero Section */}
+      <section id="home" className="max-w-[1240px] mx-auto px-6 pt-16 pb-12 text-center flex flex-col items-center">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs md:text-sm font-medium mb-8 animate-fade-in shadow-sm">
+          <Sparkles className="w-4 h-4 text-blue-500" />
+          <span>Autonomous Indic Voice Recovery Agent for India</span>
+        </div>
+
+        {/* Hero Headline */}
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[72px] font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.12] mb-6">
+          Never Lose a Customer to<br className="hidden sm:inline" /> Payment Failures Again
+        </h1>
+        
+        {/* Hero Subtitle */}
+        <p className="text-base sm:text-lg md:text-xl text-slate-500 mb-10 max-w-2xl mx-auto leading-relaxed font-normal">
+          FikrNot detects dropped UPI and card transactions instantly, dials customers in their native language within 10 seconds, and rescues abandoned revenue with zero human intervention.
+        </p>
+
+        {/* Hero Canvas Banner with Centered Overlapping Button */}
+        <div className="w-full max-w-[1080px] relative mt-4">
+          {/* Action Button positioned right at the top center border */}
+          <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-20">
+            <Link
+              href="/demo"
+              className="inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-[#181B22] hover:bg-black text-white rounded-full font-semibold text-sm md:text-base transition-all duration-300 shadow-[0_12px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_18px_38px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ring-4 ring-white"
+            >
+              <span>Enter Operational Dashboard</span>
+              <ArrowRight className="w-4 h-4 text-slate-300" />
+            </Link>
+          </div>
+
+          {/* Smooth Pastel Gradient Card */}
+          <div className="w-full h-[320px] sm:h-[380px] md:h-[440px] rounded-[36px] md:rounded-[48px] overflow-hidden relative shadow-[0_20px_50px_rgba(150,184,246,0.2)] border border-white/60">
+            {/* Smooth Multi-Stop Gradient Layer */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#9BBDF7] via-[#D1C8F8] to-[#E5C1F8]" />
+            
+            {/* Subtle soft ambient light glow */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-300/30 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Inner Dashboard Preview Glimpse */}
+            <div className="absolute inset-x-8 md:inset-x-16 bottom-0 top-20 bg-white/40 backdrop-blur-xl rounded-t-[32px] border-t border-x border-white/60 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
+              <div className="flex items-center justify-between border-b border-slate-900/10 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-red-400" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                  <div className="w-3 h-3 rounded-full bg-green-400" />
+                  <span className="text-xs font-semibold text-slate-700 ml-2">FikrNot Autonomous Dispatcher (Active)</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  System Live &bull; Sub-10s Latency
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-black text-slate-900">
-                  {selectedItem.customerName} (₹{selectedItem.amount.toLocaleString("en-IN")})
-                </h3>
-                <span className="text-xs font-semibold text-rose-600">{selectedItem.problem}</span>
-              </div>
-            </div>
 
-            {/* Why Agent Did This */}
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 mb-4">
-              <span className="text-xs font-bold text-slate-500 uppercase block mb-1">
-                🧠 Why the AI Agent Took Action
-              </span>
-              <p className="text-xs text-slate-800 leading-relaxed font-medium">
-                {selectedItem.reason}
-              </p>
-            </div>
-
-            {/* If Voice Call: Spoken Hindi Words + Audio Player */}
-            {selectedItem.hinglishScript && (
-              <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-200 mb-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
-                    <Volume2 className="w-4 h-4 text-indigo-600" />
-                    <span>Exact Hinglish Spoken on Call</span>
-                  </span>
-                  {selectedItem.audioFilename && (
-                    <button
-                      onClick={() => toggleAudio(selectedItem.audioFilename!)}
-                      className="text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl transition shadow"
-                    >
-                      {playingAudio === `${BACKEND_URL}/${selectedItem.audioFilename}` ? "Pause" : "▶ Play Audio"}
-                    </button>
-                  )}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-auto">
+                <div className="bg-white/80 p-4 rounded-2xl border border-white/90 shadow-sm text-left backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-xs text-blue-600 font-bold mb-1">
+                    <Activity className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Webhook Ingestion</span>
+                  </div>
+                  <div className="text-xl font-extrabold text-slate-900 mt-1">Sub-500ms</div>
+                  <span className="text-[11px] text-slate-500 font-medium">Gateway Drop Catch</span>
                 </div>
 
-                <p className="p-3 bg-white rounded-xl text-xs font-serif italic text-slate-800 leading-relaxed border border-indigo-100">
-                  "{selectedItem.hinglishScript}"
-                </p>
+                <div className="bg-white/80 p-4 rounded-2xl border border-white/90 shadow-sm text-left backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-xs text-purple-600 font-bold mb-1">
+                    <Volume2 className="w-3.5 h-3.5 text-purple-500" />
+                    <span>Indic Voice AI</span>
+                  </div>
+                  <div className="text-xl font-extrabold text-slate-900 mt-1">12+ Dialects</div>
+                  <span className="text-[11px] text-slate-500 font-medium">Hinglish & Regional</span>
+                </div>
 
-                {selectedItem.audioFilename && (
-                  <audio
-                    controls
-                    className="w-full h-8 rounded-lg"
-                    src={`${BACKEND_URL}/${selectedItem.audioFilename}`}
-                  />
-                )}
+                <div className="bg-white/80 p-4 rounded-2xl border border-white/90 shadow-sm text-left backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold mb-1">
+                    <Zap className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>1-Click Fallback</span>
+                  </div>
+                  <div className="text-xl font-extrabold text-slate-900 mt-1">Instant Push</div>
+                  <span className="text-[11px] text-slate-500 font-medium">15-Min Cart Reserve</span>
+                </div>
+
+                <div className="bg-white/80 p-4 rounded-2xl border border-white/90 shadow-sm text-left backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 text-xs text-amber-600 font-bold mb-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Zero Spam Filter</span>
+                  </div>
+                  <div className="text-xl font-extrabold text-slate-900 mt-1">Bounded AI</div>
+                  <span className="text-[11px] text-slate-500 font-medium">Safe Call Suppression</span>
+                </div>
               </div>
-            )}
 
-            {/* 1-Click Fallback Checkout Link */}
-            <a
-              href={`${BACKEND_URL}/checkout/${selectedItem.orderId}`}
-              target="_blank"
-              rel="noreferrer"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 text-xs shadow-md transition"
-            >
-              <span>🛒 Open Customer SMS & 1-Click Checkout Sheet</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+              <div className="text-center text-xs text-slate-600 font-medium">
+                Click the top black pill to explore the live interactive simulator with audio synthesis &rarr;
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="max-w-[1240px] mx-auto px-6 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
+            Intelligent intervention methods
+          </h2>
+          <p className="text-slate-500 text-base md:text-lg max-w-xl mx-auto">
+            We provide the optimal recovery channel for every transaction scenario under full automated control.
+          </p>
+        </div>
+
+        {/* Feature 1: The Phone Call UI (Voice AI) */}
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center bg-white rounded-[36px] p-8 md:p-14 border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.04)] mb-12">
+          {/* Phone Mockup Left */}
+          <div className="flex justify-center relative">
+            <div className="absolute inset-0 bg-blue-500/15 blur-3xl rounded-full transform -rotate-6" />
+            
+            {/* Phone Chassis */}
+            <div className="relative bg-slate-900 border-[8px] border-slate-800 rounded-[3rem] shadow-2xl overflow-hidden aspect-[9/18.5] w-[270px] sm:w-[290px] flex flex-col items-center ring-1 ring-white/10">
+              <div className="absolute top-0 w-32 h-6 bg-slate-800 rounded-b-3xl z-20 flex items-center justify-center">
+                <div className="w-10 h-1 bg-slate-700 rounded-full" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950" />
+              
+              <div className="relative z-10 w-full h-full flex flex-col p-6 text-white pt-14 justify-between">
+                {/* Caller Info */}
+                <div className="flex flex-col items-center">
+                  <div className="w-[72px] h-[72px] bg-blue-500/20 rounded-full flex items-center justify-center mb-3 border border-blue-400/30">
+                    <ShieldCheck className="w-10 h-10 text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-bold">FikrNot Indic Agent</h3>
+                  <p className="text-emerald-400 font-medium text-xs flex items-center gap-1.5 mt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    00:14 &bull; Active Call
+                  </p>
+                </div>
+
+                {/* Subtitles / Real-time Hinglish Transcription */}
+                <div className="bg-white/10 rounded-2xl p-4 border border-white/10 backdrop-blur-md text-left">
+                  <div className="flex items-center gap-1.5 text-[11px] text-blue-300 font-medium mb-1">
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>Live Indic Transcription</span>
+                  </div>
+                  <p className="text-xs text-slate-100 leading-relaxed font-normal">
+                    &ldquo;Namaste Rahul ji, humne dekha aapka ₹1,499 ka UPI payment fail ho gaya. Kya hum aapko naya 1-click payment link bhej dein?&rdquo;
+                  </p>
+                </div>
+                
+                {/* Audio Waveform */}
+                <div className="flex items-center justify-center gap-1.5 h-8">
+                  {[24, 12, 32, 18, 28, 14, 30, 20, 26, 16].map((height, i) => (
+                    <div 
+                      key={i} 
+                      className="w-1 bg-emerald-400 rounded-full animate-pulse" 
+                      style={{ height: `${height}px`, animationDelay: `${i * 0.08}s` }} 
+                    />
+                  ))}
+                </div>
+
+                {/* Call End Button */}
+                <div className="flex justify-center pb-2">
+                  <div className="w-[52px] h-[52px] rounded-full bg-red-500 flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors">
+                    <PhoneCall className="w-5 h-5 text-white rotate-[135deg]" />
+                  </div>
+                </div>
+                
+                <div className="w-1/3 h-1 bg-white/20 rounded-full mx-auto" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Feature Text Right */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 font-semibold text-xs mb-4">
+              <PhoneCall className="w-3.5 h-3.5" /> High-Intent Voice Rescue
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 leading-snug">
+              Human-like Indic voice agents that call within 10 seconds.
+            </h3>
+            <p className="text-slate-600 leading-relaxed mb-6">
+              When high-value orders fail due to bank server timeouts or UPI glitches, our autonomous agent initiates a polite voice call in the customer’s native regional dialect to resolve doubts and complete the transaction.
+            </p>
+            <ul className="space-y-3">
+              {[
+                "Zero manual support overhead",
+                "Recognizes customer hesitations & objections in real-time",
+                "Instant OTP/UPI fresh link generation during call"
+              ].map((point, idx) => (
+                <li key={idx} className="flex items-center gap-2.5 text-sm font-medium text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Feature 2: SMS / WhatsApp 1-Click Fallback */}
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center bg-white rounded-[36px] p-8 md:p-14 border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+          {/* Feature Text Left */}
+          <div className="order-2 md:order-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold text-xs mb-4">
+              <Zap className="w-3.5 h-3.5" /> Bounded & Spam-Free Policy
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 leading-snug">
+              Zero spam policy. We know when to stay quiet.
+            </h3>
+            <p className="text-slate-600 leading-relaxed mb-6">
+              Not every dropped transaction requires a phone call. For micro-payments or transient gateway flickers, FikrNot smartly skips voice outreach and dispatches an instant 1-click direct checkout link.
+            </p>
+            <ul className="space-y-3">
+              {[
+                "Dynamic routing based on cart value & user history",
+                "Auto-expires links when cart is recovered",
+                "Whitelisted WhatsApp & SMS business headers"
+              ].map((point, idx) => (
+                <li key={idx} className="flex items-center gap-2.5 text-sm font-medium text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* SMS Phone Mockup Right */}
+          <div className="order-1 md:order-2 flex justify-center relative">
+            <div className="absolute inset-0 bg-amber-500/15 blur-3xl rounded-full transform rotate-6" />
+            
+            {/* Phone Chassis */}
+            <div className="relative bg-slate-900 border-[8px] border-slate-800 rounded-[3rem] shadow-2xl overflow-hidden aspect-[9/18.5] w-[270px] sm:w-[290px] flex flex-col ring-1 ring-white/10 bg-slate-100">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-b-3xl z-20 flex items-center justify-center">
+                <div className="w-10 h-1 bg-slate-700 rounded-full" />
+              </div>
+              
+              {/* Message Header */}
+              <div className="bg-slate-100 pt-10 pb-3 px-4 border-b border-slate-200 flex items-center gap-3">
+                <div className="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
+                  <MessageSquare className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-xs">FikrNot Updates</h4>
+                  <p className="text-[10px] text-emerald-600 font-medium">Verified Merchant Channel</p>
+                </div>
+              </div>
+              
+              {/* Chat Thread */}
+              <div className="p-4 flex flex-col gap-3 bg-white h-full justify-between">
+                <div>
+                  <div className="text-[10px] text-center text-slate-400 font-medium my-2">Today 14:32</div>
+                  
+                  {/* SMS Bubble */}
+                  <div className="bg-slate-50 text-slate-800 p-3.5 rounded-2xl rounded-tl-sm text-xs shadow-sm border border-slate-200/80 leading-relaxed">
+                    <p className="font-medium text-slate-900 mb-1">Hi Priya! 👋</p>
+                    <p>We noticed your ₹299 transaction failed due to bank server latency. Your cart has been reserved for 15 mins:</p>
+                    <div className="mt-2.5 p-2 bg-blue-50/80 rounded-lg border border-blue-200/60 flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-blue-600 truncate">fikrnot.vercel.app/pay/ord_9x</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-[11px] text-slate-400">
+                  <span>Replying disabled for updates</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
+                </div>
+              </div>
+              
+              <div className="w-1/3 h-1 bg-slate-300 rounded-full mx-auto my-1.5" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Advantages Section */}
+      <section id="advantages" className="max-w-[1240px] mx-auto px-6 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
+            Why Indian enterprises choose FikrNot
+          </h2>
+          <p className="text-slate-500 text-base md:text-lg max-w-xl mx-auto">
+            Engineered specifically to solve high drop-offs in the Indian UPI and D2C checkout ecosystem.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[
+            {
+              step: "01",
+              title: "Sub-10s Intervention",
+              desc: "Immediate call engagement before the buyer leaves checkout to search for an alternative product.",
+              icon: Clock,
+              color: "text-blue-500",
+              bg: "bg-blue-50"
+            },
+            {
+              step: "02",
+              title: "12+ Indic Accents",
+              desc: "Native Hindi, Hinglish, Tamil, Telugu, and Marathi conversational fluency that builds instant consumer trust.",
+              icon: Globe,
+              color: "text-purple-500",
+              bg: "bg-purple-50"
+            },
+            {
+              step: "03",
+              title: "40%+ Cart Resurrection",
+              desc: "Turn abandoned payment errors directly into completed orders with autonomous AI follow-up.",
+              icon: TrendingUp,
+              color: "text-emerald-500",
+              bg: "bg-emerald-50"
+            }
+          ].map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={i}
+                className="bg-white rounded-[28px] p-8 border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-300 tracking-wider uppercase">{item.step}</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">{item.title}</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Dark Footer with Glowing Watermark Text */}
+      <footer className="bg-[#101014] pt-4 px-4 pb-6">
+        <div className="max-w-[1240px] mx-auto bg-[#18181C] rounded-[36px] overflow-hidden relative border border-white/5">
+          
+          <div className="px-10 md:px-16 pt-16 pb-32 grid grid-cols-1 md:grid-cols-12 gap-12 relative z-10">
+            {/* Left Column */}
+            <div className="md:col-span-6">
+              <div className="flex items-center gap-2.5 mb-6">
+                <div className="w-8 h-8 rounded-xl bg-blue-500 flex items-center justify-center shadow-md">
+                  <ShieldCheck className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-xl font-bold tracking-tight text-white">FikrNot</span>
+              </div>
+              
+              <h3 className="text-2xl font-bold text-white mb-4 leading-snug">
+                Grow your business with the<br />best payment recovery solution
+              </h3>
+              <p className="text-[#A1A1AA] text-sm leading-relaxed mb-6 max-w-sm">
+                Autonomous Indic AI voice & WhatsApp agents rescuing dropped carts across India.
+              </p>
+              <p className="text-[#71717A] text-xs">
+                Built with precision for Razorpay Buildathon, 2024
+              </p>
+            </div>
+            
+            {/* Middle Column */}
+            <div className="md:col-span-3">
+              <h4 className="text-white font-semibold text-sm mb-5">Navigation</h4>
+              <ul className="space-y-3.5 text-sm text-[#A1A1AA]">
+                {navItems.map((item) => (
+                  <li key={item.label}>
+                    <a href={item.href} className="hover:text-white transition-colors">{item.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            {/* Right Column */}
+            <div className="md:col-span-3">
+              <h4 className="text-white font-semibold text-sm mb-5">Console & Links</h4>
+              <ul className="space-y-3.5 text-sm text-[#A1A1AA] mb-8">
+                <li>
+                  <Link href="/demo" className="text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1">
+                    Operational Dashboard <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </li>
+                <li><a href="#features" className="hover:text-white transition-colors">Voice Engine</a></li>
+                <li><a href="#advantages" className="hover:text-white transition-colors">Indic Recovery</a></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Huge Glowing Text at Bottom */}
+          <div className="absolute bottom-0 left-0 w-full h-[220px] overflow-hidden flex items-end justify-center z-0 pointer-events-none select-none">
+            <div className="text-[130px] sm:text-[180px] md:text-[230px] font-black tracking-tighter text-white/[0.035] leading-none w-full text-center whitespace-nowrap translate-y-10 sm:translate-y-14">
+              FIKRNOT
+            </div>
+            {/* Bottom Glow */}
+            <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-blue-600/35 via-purple-600/15 to-transparent mix-blend-screen" />
+            <div className="absolute -bottom-[60px] left-1/2 -translate-x-1/2 w-[85%] h-[160px] bg-indigo-500/40 blur-[90px]" />
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
