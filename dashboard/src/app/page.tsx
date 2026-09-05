@@ -433,7 +433,7 @@ export default function LandingPage() {
                 Autonomous Indic AI voice & WhatsApp agents rescuing dropped carts across India.
               </p>
               <p className="text-[#71717A] text-xs">
-                Built with precision for Razorpay Buildathon, 2024
+                Built with precision for Razorpay Buildathon &bull; Track 03
               </p>
             </div>
             
