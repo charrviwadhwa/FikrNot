@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { 
-  Play, 
-  Pause, 
-  PhoneCall, 
-  MessageSquare, 
-  ShieldCheck, 
-  ExternalLink, 
-  CheckCircle2, 
-  X, 
-  Zap, 
+import {
+  Play,
+  Pause,
+  PhoneCall,
+  MessageSquare,
+  ShieldCheck,
+  ExternalLink,
+  CheckCircle2,
+  X,
+  Zap,
   TrendingUp,
   Volume2,
   Clock,
@@ -104,7 +104,7 @@ export default function SimpleCleanDashboard() {
             setIvrBanner(data.latestIvrEvent.message);
           }
         }
-      } catch (e) {}
+      } catch (e) { }
     }, 2000);
 
     return () => clearInterval(interval);
@@ -160,7 +160,7 @@ export default function SimpleCleanDashboard() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans p-4 sm:p-8 flex justify-center items-start">
       <div className="w-full max-w-[1240px] bg-white rounded-3xl shadow-xl border border-slate-200/90 overflow-hidden p-6 sm:p-8">
-        
+
         {/* ================= HEADER ================= */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-100">
           <div>
@@ -292,8 +292,8 @@ export default function SimpleCleanDashboard() {
               </div>
               <h3 className="text-base font-black text-slate-900 mt-0.5">What Happens When a Customer Drops & Presses '1'</h3>
             </div>
-            <a 
-              href="/checkout/order_high_val_991"
+            <a
+              href={`${BACKEND_URL}/checkout/order_high_val_991`}
               target="_blank"
               rel="noreferrer"
               className="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl shadow transition flex items-center gap-1"
@@ -425,7 +425,7 @@ export default function SimpleCleanDashboard() {
                     )}
 
                     <a
-                      href={`/checkout/${item.orderId}`}
+                      href={`${BACKEND_URL}/checkout/${item.orderId}`}
                       target="_blank"
                       rel="noreferrer"
                       onClick={(e) => e.stopPropagation()}
@@ -510,7 +510,7 @@ export default function SimpleCleanDashboard() {
 
             {/* 1-Click Fallback Checkout Link */}
             <a
-              href={`/checkout/${selectedItem.orderId}`}
+              href={`${BACKEND_URL}/checkout/${selectedItem.orderId}`}
               target="_blank"
               rel="noreferrer"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 text-xs shadow-md transition"
