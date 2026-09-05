@@ -4,13 +4,33 @@
 
 ---
 
-## Problem Statement: The $30B Panic Drop in Indian Commerce
-In India, UPI powers billions of transactions monthly. However, **app-switch timeouts, transient bank outages, and connectivity drops** lead to massive checkout abandonment:
-1. **Debit Anxiety**: When an order fails after UPI PIN entry, buyers panic: *"Did my money deduct? Did my order confirm?"*
-2. **Delayed Outreach Failure**: Generic SMS notifications sent 30 to 45 minutes later fail to convert because buyers have already switched to competitors.
-3. **Double Charges and Spam**: Naive automation leads to embarrassing outreach when payments actually captured in the background, or spams buyers who intentionally cancelled.
+## Problem Statement: The $30B Flash Sale Checkout Drop in Indian Commerce
+In India, UPI powers billions of checkouts monthly. During high-demand flash sales (such as Diwali or festive sales events), payment session timeouts and app-switch glitches cause critical revenue loss due to two primary psychological hurdles:
+1. **Debit Anxiety**: When an order drops after entering a UPI PIN, buyers panic: *"Did my money deduct? Did my order confirm?"*
+2. **Fear of Missing Out (FOMO)**: Buyers worry their limited-stock cart item will sell out before they can re-attempt payment.
+3. **Delayed Outreach Failure**: Generic SMS notifications sent 30 to 45 minutes later fail to convert because buyers have already moved to competitors.
+4. **Double Charges and Spam**: Naive automation leads to embarrassing outreach when payments actually captured in the background, or spams buyers who intentionally cancelled.
 
-**FikrNot** solves this through an autonomous, bounded AI voice recovery agent that detects dropped transactions in real-time, calms debit anxiety in natural Hinglish within 10 seconds, and generates an instant 1-click fallback session.
+**FikrNot** is an autonomous, bounded AI voice recovery agent that detects dropped transactions in real-time, calms debit anxiety in natural Hinglish within 10 seconds, reserves the customer's cart for 15 minutes, and delivers an instant 1-click fallback session.
+
+---
+
+## Core Pillars: How FikrNot Rescues Flash Sale Revenue
+
+### 1. Sub-10s Empathetic Hinglish Voice Call
+When a high-value order drops, FikrNot dials the customer within 10 seconds while they are still holding their phone. Instead of a robotic alert, our agent speaks natural, reassuring Hinglish:
+> *"Namaste Rahul ji, humne dekha aapka UPI session time out ho gaya. Fikr mat kijiye, agar paise kate hain toh bank auto-reverse ho jayenge. Aapka cart 15 minute ke liye reserve hai. Agar aap abhi pay karna chahte hain toh dialpad par 1 dabayein."*
+
+### 2. 15-Minute Cart Reservation & Inventory Protection
+During high-demand sales, cart drops trigger panic because limited-inventory products can sell out instantly. FikrNot locks the product inventory exclusively for the customer for 15 minutes, giving them guaranteed time to re-authorize payment without losing their deal.
+
+### 3. Instant 1-Click SMS & WhatsApp Recovery
+Customers who press '1' on their dialpad (or whose drop does not warrant an intrusive voice call) immediately receive a pre-filled 1-click recovery link via SMS and WhatsApp.
+
+### 4. High-Conversion 1-Click Fallback Checkout
+Opening the recovery link launches a frictionless fallback checkout with:
+- A live 15:00 countdown timer showing inventory reservation status.
+- Alternative high-success payment rails (Dynamic UPI QR and Direct UPI Push Collect) that completely eliminate app-switch timeout errors.
 
 ---
 
@@ -89,10 +109,10 @@ flowchart LR
 | Feature | Description |
 | :--- | :--- |
 | **Sub-10s Indic Voice Call** | Places an empathetic Hinglish reassurance call while the buyer is still holding their phone. |
+| **15-Min Flash Sale Cart Lock** | Holds high-demand inventory exclusively for the customer to prevent stockout anxiety. |
 | **Zero-Spam Stopping Rules** | Deterministically suppresses calls when a buyer intentionally clicks cancel or money is already captured. |
 | **Interactive DTMF Press 1** | Captures user recovery consent via keypad - 100% secure, zero PIN or password requests. |
-| **15-Min Inventory Lock** | Reserves high-demand cart items for 15 minutes to guarantee checkout completion. |
-| **Alternative Fallback Rails** | Provides Dynamic UPI QR, Card, and NetBanking on the fallback sheet to eliminate app-switch drops. |
+| **1-Click Fallback Checkout** | Pre-fills order details and provides Dynamic UPI QR to eliminate app-switch timeout errors. |
 
 ---
 
